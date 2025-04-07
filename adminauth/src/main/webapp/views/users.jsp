@@ -73,7 +73,7 @@
             <p class="error">No users found.</p>
         <% } %>
     </div>
-    <a href="/admin/dashboard" style="padding: 10px 20px; background-color: #4A90E2; color: white; text-decoration: none; border-radius: 5px; display: inline-block;">
+    <a href="/user/dashboard" style="padding: 10px 20px; background-color: #4A90E2; color: white; text-decoration: none; border-radius: 5px; display: inline-block;">
     Go to  Dashboard
 </a>
 

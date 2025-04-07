@@ -53,52 +53,85 @@
             background-color: #27AE60;
             color: white;
         }
+        #countdown {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #555;
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>Welcome, <%= Objects.toString(session.getAttribute("username"), "Guest") %>!</h2>
+<div class="container">
+    <h2>Welcome, <%= Objects.toString(session.getAttribute("username"), "Guest") %>!</h2>
 
-        <!-- Display Flash Messages -->
-        <% if (request.getAttribute("message") != null) { %>
-            <p class="success message"><%= request.getAttribute("message") %></p>
-        <% } %>
+    <% if (request.getAttribute("message") != null) { %>
+        <p class="success message"><%= request.getAttribute("message") %></p>
+    <% } %>
 
-        <% if (request.getAttribute("error") != null) { %>
-            <p class="error message"><%= request.getAttribute("error") %></p>
-        <% } %>
+    <% if (request.getAttribute("error") != null) { %>
+        <p class="error message"><%= request.getAttribute("error") %></p>
+    <% } %>
 
-        <!-- Request Access Form -->
-        <h3>Request Access to View Users</h3>
-        <form action="/access/request" method="post">
-            <input type="hidden" name="username" value="<%= session.getAttribute("username") %>">
-            <button type="submit" class="btn request-btn">Request Access</button>
+    <h3>Request Access to View Users</h3>
+    <form action="/access/request" method="post">
+        <input type="hidden" name="username" value="<%= session.getAttribute("username") %>">
+        <button type="submit" class="btn request-btn">Request Access</button>
+    </form>
+
+    <h3>Access Status</h3>
+    <%
+        Boolean isApproved = (Boolean) request.getAttribute("isApproved");
+        if (isApproved != null && isApproved) {
+    %>
+        <p class="success">Your request is approved! You can now view the users.</p>
+        <form action="/access/view-users" method="get">
+            <input type="hidden" name="token" value="<%= request.getAttribute("token") != null ? request.getAttribute("token") : "" %>">
+            <button type="submit" class="btn view-users">View Users</button>
         </form>
 
-        <!-- Check if Access is Approved -->
-        <h3>Access Status</h3>
-        <%
-            Boolean isApproved = (Boolean) request.getAttribute("isApproved");
-            if (isApproved != null && isApproved) {
-        %>
-            <p class="success">Your request is approved! You can now view the users.</p>
-            <form action="/access/view-users" method="get">
-                <input type="hidden" name="username" value="<%= session.getAttribute("username") %>">
-                <button type="submit" class="btn view-users">View Users</button>
-            </form>
-        <%
-            } else {
-        %>
-            <p class="error">Your request is still pending or has been rejected.</p>
-        <%
+        <!-- Countdown Timer -->
+        <div id="countdown"></div>
+
+ <script>
+    const expiryTimeStr = '<%= request.getAttribute("expiryTime") %>';
+    if (expiryTimeStr && expiryTimeStr !== 'null') {
+        const expiry = new Date(expiryTimeStr);
+
+        function updateCountdown() {
+            const now = new Date();
+            const diff = expiry - now;
+
+            if (diff <= 0) {
+                document.getElementById("countdown").innerHTML = "Access expired.";
+                setTimeout(() => {
+                    window.location.href = "/user";
+                }, 1000);
+                return;
             }
-        %>
-    </div>
-    <a href="/logout" style="padding: 10px 20px; background-color: #e74c3c; color: white; text-decoration: none; border-radius: 5px; display: inline-block;">
-    Logout
-</
-    
+
+            const mins = Math.floor(diff / 60000);
+            const secs = Math.floor((diff % 60000) / 1000);
+            document.getElementById("countdown").innerHTML = "Access expires in: " + mins + "m " + secs + "s";
+            setTimeout(updateCountdown, 1000);
+        }
+
+        updateCountdown();
+    } else {
+        document.getElementById("countdown").innerHTML = "No expiry time available.";
+    }
+</script>
+ 
+    <%
+        } else {
+    %>
+        <p class="error">Your request is still pending or has been rejected.</p>
+    <%
+        }
+    %>
+</div>
+
+<a href="/logout" style="padding: 10px 20px; background-color: #e74c3c; color: white; text-decoration: none; border-radius: 5px; display: inline-block;">Logout</a>
 
 </body>
 </html>

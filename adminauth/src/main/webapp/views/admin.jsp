@@ -117,95 +117,47 @@
         <% if (request.getAttribute("error") != null) { %>
             <div class="message error"><%= request.getAttribute("error") %></div>
         <% } %>
+<h3>Pending Access Requests</h3>
+<table>
+    <tr>
+        <th>Username</th>
+        <th>Action</th>
+    </tr>
+    <%
+        List<AccessRequest> accessRequests = (List<AccessRequest>) request.getAttribute("accessRequests");
+        if (accessRequests != null && !accessRequests.isEmpty()) {
+            for (AccessRequest req : accessRequests) {
+    %>
+        <tr>
+            <td><%= req.getUsername() %></td>
+            <td>
+                <form action="/admin/approveAccess/<%= req.getId() %>" method="post" style="display:inline;">
+                    <button type="submit" class="btn approve">Approve</button>
+                </form>
 
-        <%-- Table to Show Pending User Approvals --%>
-        <h3>Pending User Creation Requests</h3>
-        <table>
-            <tr>
-                <th>Username</th>
-                <th>Role</th>
-                <th>Action</th>
-            </tr>
+                <form action="/admin/rejectAccess" method="post" style="display:inline;">
+                    <input type="hidden" name="username" value="<%= req.getUsername() %>">
+                    <button type="submit" class="btn reject">Reject</button>
+                </form>
+            </td>
+        </tr>
+    <%
+            }
+        } else {
+    %>
+        <tr>
+            <td colspan="2">No pending access requests</td>
+        </tr>
+    <%
+        }
+    %>
+</table>
 
-            <%
-                List<userCreationRequest> userRequests = (List<userCreationRequest>) request.getAttribute("userRequests");
-                if (userRequests != null && !userRequests.isEmpty()) {
-                    for (userCreationRequest req : userRequests) {
-            %>
-                <tr>
-                    <td><%= req.getUsername() %></td>
-                    <td><%= req.getRole() %></td>
-                    <td>
-                        <!-- Approve Form -->
-                        <form action="/admin/approveUser" method="post" style="display:inline;">
-                            <input type="hidden" name="username" value="<%= req.getUsername() %>">
-                            <button type="submit" class="btn approve">Approve</button>
-                        </form>
-
-                        <!-- Reject Form -->
-                        <form action="/admin/rejectUser" method="post" style="display:inline;">
-                            <input type="hidden" name="username" value="<%= req.getUsername() %>">
-                            <button type="submit" class="btn reject">Reject</button>
-                        </form>
-                    </td>
-                </tr>
-            <%
-                    }
-                } else {
-            %>
-                <tr>
-                    <td colspan="3" style="text-align:center;">No pending user requests</td>
-                </tr>
-            <%
-                }
-            %>
-        </table>
-
-        <%-- Table for Pending Access Requests --%>
-        <h3>Pending Access Requests</h3>
-        <table>
-            <tr>
-                <th>Username</th>
-                <th>Action</th>
-            </tr>
-
-            <% 
-                List<AccessRequest> accessRequests = (List<AccessRequest>) request.getAttribute("accessRequests");
-                if (accessRequests != null && !accessRequests.isEmpty()) {
-                    for (AccessRequest req : accessRequests) {
-            %>
-                <tr>
-                    <td><%= req.getUsername() %></td>
-                    <td>
-                        <!-- Approve -->
-                        <form action="/admin/approveAccess" method="post" style="display:inline;">
-                            <input type="hidden" name="username" value="<%= req.getUsername() %>">
-                            <button type="submit" class="btn approve">Approve</button>
-                        </form>
-
-                        <!-- Reject -->
-                        <form action="/admin/rejectAccess" method="post" style="display:inline;">
-                            <input type="hidden" name="username" value="<%= req.getUsername() %>">
-                            <button type="submit" class="btn reject">Reject</button>
-                        </form>
-                    </td>
-                </tr>
-            <%
-                    }
-                } else {
-            %>
-                <tr>
-                    <td colspan="2" style="text-align:center;">No pending access requests</td>
-                </tr>
-            <%
-                }
-            %>
-        </table>
 
         <a href="/admin/users" class="link-btn">View All Users</a>
         <a href="/logout" style="padding: 10px 20px; background-color: #e74c3c; color: white; text-decoration: none; border-radius: 5px; display: inline-block;">
     Logout
-</
+</a>
         
     </div>
 

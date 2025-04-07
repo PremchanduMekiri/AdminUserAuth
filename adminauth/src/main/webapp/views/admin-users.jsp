@@ -1,97 +1,103 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.List, com.example.demo.Admin" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.List" %>
+<%@ page import="com.example.demo.Entity.User" %>
 
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>All Users</title>
+    <title>All Users - Admin View</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-color: #f4f7f8;
+            padding: 30px;
             text-align: center;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            margin: auto;
+            width: 80%;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         h2 {
             color: #333;
+            margin-bottom: 20px;
         }
 
         table {
-            width: 60%;
-            margin: 20px auto;
+            width: 100%;
             border-collapse: collapse;
-            background: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
         }
 
         th, td {
-            padding: 12px;
+            padding: 12px 15px;
             border: 1px solid #ddd;
-            text-align: center;
         }
 
         th {
-            background-color: #007bff;
+            background-color: #4A90E2;
             color: white;
         }
 
         tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        tr:hover {
-            background-color: #f1f1f1;
+            background-color: #f2f2f2;
         }
 
         .back-btn {
-            display: inline-block;
             margin-top: 20px;
             padding: 10px 15px;
-            background-color: #007bff;
+            background-color: #4A90E2;
             color: white;
             text-decoration: none;
             border-radius: 5px;
+            display: inline-block;
         }
 
         .back-btn:hover {
-            background-color: #0056b3;
+            background-color: #357ABD;
         }
     </style>
 </head>
 <body>
 
-    <h2>Registered Users</h2>
+<div class="container">
+    <h2>All Registered Users</h2>
 
-    <table>
-        <tr>
-            <th>Username</th>
-            <th>Role</th>
-        </tr>
-
-        <%
-            List<Admin> users = (List<Admin>) request.getAttribute("users");
-            if (users != null && !users.isEmpty()) {
-                for (Admin user : users) {
-        %>
+    <%
+        List<User> users = (List<User>) request.getAttribute("users");
+        if (users != null && !users.isEmpty()) {
+    %>
+        <table>
             <tr>
-                <td><%= user.getUsername() %></td>
-                <td><%= user.getId()%></td>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Role</th>
+                
             </tr>
-        <%
-                }
-            } else {
-        %>
-            <tr>
-                <td colspan="2">No users found</td>
-            </tr>
-        <%
-            }
-        %>
-    </table>
 
-    <a href="/admin" class="back-btn">Back to Dashboard</a>
+            <% for (User user : users) { %>
+                <tr>
+                    <td><%= user.getId() %></td>
+                    <td><%= user.getUsername() %></td>
+                    <td><%= user.getRole() %></td>
+                  
+                </tr>
+            <% } %>
+        </table>
+    <% } else { %>
+        <p>No users found in the system.</p>
+    <% } %>
+
+    <a href="/admin" class="back-btn">⬅ Back to Dashboard</a>
+</div>
 
 </body>
 </html>
+
 

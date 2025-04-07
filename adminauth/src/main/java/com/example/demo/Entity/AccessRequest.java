@@ -3,6 +3,8 @@ package com.example.demo.Entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Data
 public class AccessRequest {
@@ -16,6 +18,11 @@ public class AccessRequest {
 
     private boolean approved = false; // Default: Not approved
 
+    @Lob  // Optional: if you expect long token strings
+    private String token;
+
+    private LocalDateTime expiryTime;
+
     // Constructors
     public AccessRequest() {}
 
@@ -24,4 +31,5 @@ public class AccessRequest {
         this.approved = false;
     }
 }
+
 

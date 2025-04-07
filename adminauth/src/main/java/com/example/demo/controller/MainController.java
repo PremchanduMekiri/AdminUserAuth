@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -7,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -20,7 +20,6 @@ import com.example.demo.repositories.UserRepository;
 import com.example.demo.repositories.userCreationRequestRepository;
 import com.example.demo.service.AuthService;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -70,33 +69,59 @@ public class MainController {
 
     @GetMapping("/admin")
     public String adminDashboard(Model model) {
-        List<userCreationRequest> userRequests = userCreationRequestRepository.findByApprovedFalse();
-        List<AccessRequest> accessRequests = accessRequestRepository.findByApprovedFalse(); // ✅ Only fetch unapproved requests
+        // Get pending user creation requests
+        List<userCreationRequest> userRequests = userCreationRequestRepository.findAll();
+
+        // Get pending access requests (approved = false)
+        List<AccessRequest> accessRequests = accessRequestRepository.findByApprovedFalse();
 
         model.addAttribute("userRequests", userRequests);
         model.addAttribute("accessRequests", accessRequests);
 
-        return "admin";
+        return "admin"; // Return to the admin.jsp dashboard
     }
+
 
     @GetMapping("/user")
-    public String userDashboard(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
-        // ✅ Get username from session
+    public String userDashboard(HttpSession session, Model model) {
         String username = (String) session.getAttribute("username");
+        model.addAttribute("username", username); // Greeting on the page
 
-        if (username == null || username.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Session expired. Please log in again.");
-            return "redirect:/"; // Redirect to login page
+        Optional<AccessRequest> optionalRequest = accessRequestRepository.findByUsername(username);
+
+        if (optionalRequest.isPresent()) {
+            AccessRequest request = optionalRequest.get();
+
+            if (request.isApproved()) {
+                if (request.getExpiryTime() != null && request.getExpiryTime().isAfter(LocalDateTime.now())) {
+                    model.addAttribute("token", request.getToken());
+                    model.addAttribute("message", "Access approved!");
+                    model.addAttribute("isApproved", true); 
+                    model.addAttribute("expiryTime", request.getExpiryTime().toString());
+
+                } else {
+                    request.setApproved(false);
+                    request.setToken(null);
+                    request.setExpiryTime(null);
+                    accessRequestRepository.save(request);
+
+                    model.addAttribute("error", "Your token has expired.");
+                    model.addAttribute("isApproved", false); // ✅ Optional but good to have
+                }
+            } else {
+                model.addAttribute("error", "Your request is still pending.");
+                model.addAttribute("isApproved", false);
+            }
+        } else {
+            model.addAttribute("error", "No access request found.");
+            model.addAttribute("isApproved", false);
         }
 
-        Optional<AccessRequest> request = accessRequestRepository.findByUsername(username);
-        boolean isApproved = request.isPresent() && request.get().isApproved();
-
-        model.addAttribute("username", username);
-        model.addAttribute("isApproved", isApproved);
-
-        return "user";  // ✅ Load user.jsp
+        return "user";
     }
+
+
+
 
 
     @GetMapping("/signup")
@@ -172,13 +197,13 @@ public String viewAllUsers(RedirectAttributes model) {
 
 @GetMapping("users2")
 public String users() { 
-    return "users";
+    return "admin-users";
 }
 
-@GetMapping("/admin/dashboard")
-public String adminDashboard() {
+@GetMapping("/user/dashboard")
+public String userDashboard() {
     // You can add any logic or model attributes here
-    return "redirect:/admin";  // The name of your dashboard JSP view
+    return "redirect:/user";  // The name of your dashboard JSP view
 }
 
 @GetMapping("/logout")
