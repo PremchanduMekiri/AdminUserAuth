@@ -1,24 +1,29 @@
 package com.example.demo.JwtToken;  // ✅ Use the right package under your project
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.stereotype.Component;
+
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 @Component  // ✅ VERY IMPORTANT
 public class JwtTokenUtil {
 
-    private final String SECRET_KEY = "uG9kdW5vbmVkTW9zdFNlY3VyZVN1cGVyU2VjcmV0S2V5IQ==";
+    private final String SECRET_KEY = "uG9kdW5vbmVkTW9zdFNlY3VyZVN1cGVyU2VjcmV0S2V5IQ=jxkjdcijwh";
 
-    public String generateToken(String username, int expiryMinutes) {
+    public String generateToken(String username, String url, int expiryMinutes) {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiryMinutes * 60 * 1000))
+                .claim("url", url)
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
+
 
     public boolean validateToken(String token) {
         try {

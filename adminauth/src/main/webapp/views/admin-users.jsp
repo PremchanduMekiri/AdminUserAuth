@@ -9,24 +9,24 @@
     <title>All Users - Admin View</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7f8;
-            padding: 30px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            padding: 40px;
             text-align: center;
         }
 
         .container {
             background: #ffffff;
-            padding: 25px;
-            border-radius: 8px;
+            padding: 30px;
+            border-radius: 10px;
+            width: 85%;
             margin: auto;
-            width: 80%;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         h2 {
             color: #333;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         table {
@@ -36,31 +36,38 @@
         }
 
         th, td {
-            padding: 12px 15px;
-            border: 1px solid #ddd;
+            padding: 14px 18px;
+            border: 1px solid #e0e0e0;
         }
 
         th {
-            background-color: #4A90E2;
-            color: white;
+            background-color: #007BFF;
+            color: #fff;
         }
 
         tr:nth-child(even) {
-            background-color: #f2f2f2;
+            background-color: #f9f9f9;
         }
 
         .back-btn {
-            margin-top: 20px;
-            padding: 10px 15px;
-            background-color: #4A90E2;
+            margin-top: 25px;
+            padding: 10px 20px;
+            background-color: #007BFF;
             color: white;
             text-decoration: none;
             border-radius: 5px;
             display: inline-block;
+            transition: background-color 0.3s ease;
         }
 
         .back-btn:hover {
-            background-color: #357ABD;
+            background-color: #0056b3;
+        }
+
+        .info-msg {
+            color: red;
+            font-weight: bold;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -78,15 +85,12 @@
                 <th>ID</th>
                 <th>Username</th>
                 <th>Role</th>
-                
             </tr>
-
             <% for (User user : users) { %>
                 <tr>
                     <td><%= user.getId() %></td>
                     <td><%= user.getUsername() %></td>
                     <td><%= user.getRole() %></td>
-                  
                 </tr>
             <% } %>
         </table>
@@ -94,10 +98,22 @@
         <p>No users found in the system.</p>
     <% } %>
 
-    <a href="/admin" class="back-btn">⬅ Back to Dashboard</a>
+    <%
+        Boolean accessByToken = (Boolean) session.getAttribute("accessByToken");
+        if (accessByToken == null || !accessByToken) {
+    %>
+        <a href="/admin" class="back-btn">⬅ Back to Dashboard</a>
+    <%
+        } else {
+    %>
+        <p class="info-msg">You are viewing via token-based access. Dashboard link is disabled.</p>
+    <%
+        }
+    %>
 </div>
 
 </body>
 </html>
+
 
 

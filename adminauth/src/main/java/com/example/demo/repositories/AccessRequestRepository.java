@@ -11,6 +11,8 @@ public interface AccessRequestRepository extends JpaRepository<AccessRequest, Lo
     List<AccessRequest> findByApprovedFalse(); // Find pending requests
 
     List<AccessRequest> findByApprovedTrue(); // Find approved requests
+    Optional<AccessRequest> findByUsernameAndUrl(String username, String url);
+    List<AccessRequest> findByUrl(String url); 
 
 
 }

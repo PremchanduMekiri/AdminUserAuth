@@ -15,6 +15,8 @@ public class AccessRequest {
 
     @Column(unique = true, nullable = false)
     private String username;
+    
+    private String url;
 
     private boolean approved = false; // Default: Not approved
 
@@ -26,8 +28,9 @@ public class AccessRequest {
     // Constructors
     public AccessRequest() {}
 
-    public AccessRequest(String username) {
+    public AccessRequest(String username,String url) {
         this.username = username;
+        this.url = url;
         this.approved = false;
     }
 }

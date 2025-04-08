@@ -20,18 +20,26 @@ public class AccessService {
     private UserRepository userRepository;
 
     // ✅ USER SENDS REQUEST TO SEE USERS
-    public void requestAccess(String username) {
-        Optional<AccessRequest> existingRequest = accessRequestRepository.findByUsername(username);
+//    public void requestAccess(String username) {
+//        Optional<AccessRequest> existingRequest = accessRequestRepository.findByUsername(username);
+//
+//        if (existingRequest.isEmpty()) { // Prevent duplicate requests
+//            AccessRequest request = new AccessRequest(username);
+//            accessRequestRepository.save(request);
+//        }
+//    }
+    public void requestAccessForUrl(String username, String url) {
+        Optional<AccessRequest> existing = accessRequestRepository.findByUsernameAndUrl(username, url);
 
-        if (existingRequest.isEmpty()) { // Prevent duplicate requests
-            AccessRequest request = new AccessRequest(username);
+        if (existing.isEmpty()) {
+            AccessRequest request = new AccessRequest(username, url);
             accessRequestRepository.save(request);
         }
     }
 
     // ✅ ADMIN APPROVES ACCESS REQUEST
-    public boolean approveAccess(String username) {
-        Optional<AccessRequest> requestOpt = accessRequestRepository.findByUsername(username);
+    public boolean approveAccess(String username,String url) {
+        Optional<AccessRequest> requestOpt = accessRequestRepository.findByUsernameAndUrl(username,url);
 
         if (requestOpt.isPresent()) {
             AccessRequest request = requestOpt.get();
@@ -43,8 +51,8 @@ public class AccessService {
     }
 
     // ✅ ADMIN REJECTS ACCESS REQUEST
-    public boolean rejectAccess(String username) {
-        Optional<AccessRequest> requestOpt = accessRequestRepository.findByUsername(username);
+    public boolean rejectAccess(String username,String url) {
+        Optional<AccessRequest> requestOpt = accessRequestRepository.findByUsernameAndUrl(username,url);
 
         if (requestOpt.isPresent()) {
             accessRequestRepository.delete(requestOpt.get());

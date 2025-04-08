@@ -52,6 +52,7 @@ public class MainController {
         if (isAuthenticated) {
             // ✅ Store username in session for later use
             session.setAttribute("username", username);
+            session.setAttribute("role",role);
 
             if ("admin".equalsIgnoreCase(role)) {
                 redirectAttributes.addFlashAttribute("success", "Admin login successful!");
@@ -182,29 +183,44 @@ public String approveUser(@RequestParam String username, RedirectAttributes redi
 
     return "redirect:/admin";  // Ensure it redirects properly
 }
+
 @GetMapping("/admin/users")
-public String viewAllUsers(RedirectAttributes model) {
-    System.out.println("🚀 Fetching all users...");
+public String viewAllUsers(HttpSession session, Model model) {
+    String username = (String) session.getAttribute("username");
+    String role = (String) session.getAttribute("role");
+    String requestedUrl = "/admin/users";
 
-    // Fetch all users directly (Admins have full access)
-    List<User> users = userrepository.findAll();
-     model.addFlashAttribute("users", users); // ✅ Send users list to JSP
-    
+    if (username == null || role == null) {
+        model.addAttribute("error", "Session expired. Please log in again.");
+        return "redirect:/login";
+    }
 
-    return "redirect:/users2"; // ✅ Return JSP directly, NO redirect
+    // ✅ If Major Admin
+    if ("ADMIN".equalsIgnoreCase(role)) {
+        List<User> users = userrepository.findAll();
+        model.addAttribute("users", users);
+        session.setAttribute("accessByToken", false); // ⬅️ Store in session for JSP
+        return "admin-users";
+    }
+
+    // ✅ If Minor Admin with approved access
+    Optional<AccessRequest> requestOpt = accessRequestRepository.findByUsernameAndUrl(username, requestedUrl);
+
+    if (requestOpt.isPresent()) {
+        AccessRequest request = requestOpt.get();
+        if (request.isApproved() && request.getExpiryTime().isAfter(LocalDateTime.now())) {
+            List<User> users = userrepository.findAll();
+            model.addAttribute("users", users);
+            session.setAttribute("accessByToken", true); // ⬅️ Minor admin using token
+            return "admin-users";
+        }
+    }
+
+    model.addAttribute("error", "You are not authorized to view this page.");
+    return "redirect:/user";
 }
 
 
-@GetMapping("users2")
-public String users() { 
-    return "admin-users";
-}
-
-@GetMapping("/user/dashboard")
-public String userDashboard() {
-    // You can add any logic or model attributes here
-    return "redirect:/user";  // The name of your dashboard JSP view
-}
 
 @GetMapping("/logout")
 public String logout() {

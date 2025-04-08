@@ -36,16 +36,17 @@ public class AccessController {
     @Autowired
     private userCreationRequestRepository userCreationRequestRepository;
 
-    // ✅ USER REQUESTS ACCESS
+    
+ // ✅ USER REQUESTS ACCESS FOR A URL
     @PostMapping("/access/request")
-    public String requestAccess(@RequestParam String username, RedirectAttributes redirectAttributes) {
-        if (username == null || username.trim().isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Invalid request. Username is required.");
+    public String requestUrlAccess(@RequestParam String username, @RequestParam String url, RedirectAttributes redirectAttributes) {
+        if (username == null || url == null || username.trim().isEmpty() || url.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Invalid request. Username and URL are required.");
             return "redirect:/user";
         }
 
-        accessService.requestAccess(username);
-        redirectAttributes.addFlashAttribute("message", "Request Sent. Await Admin Approval.");
+        accessService.requestAccessForUrl(username, url);
+        redirectAttributes.addFlashAttribute("message", "Access request sent. Await admin approval.");
         return "redirect:/user";
     }
 
@@ -57,7 +58,10 @@ public class AccessController {
             request.setApproved(true);
 
             int expiryMinutes =2; // Token valid for 2 minutes
-            String token = jwtTokenUtil.generateToken(request.getUsername(), expiryMinutes);
+            // ✅ Get the requested URL from the request entity (you must be storing this in DB earlier)
+            String requestedUrl = request.getUrl();  // make sure this field exists and is saved when requesting
+            
+            String token = jwtTokenUtil.generateToken(request.getUsername(), requestedUrl, expiryMinutes);
 
             request.setToken(token);  // ✅ Save token to DB
             request.setExpiryTime(LocalDateTime.now().plusMinutes(expiryMinutes)); // ✅ Set expiry time in DB
@@ -73,36 +77,19 @@ public class AccessController {
     }
 
 
-
-    // ✅ ADMIN REJECTS ACCESS
     @PostMapping("/admin/rejectAccess")
-    public String rejectAccess(@RequestParam String username, RedirectAttributes redirectAttributes) {
-        accessService.rejectAccess(username);
-        redirectAttributes.addFlashAttribute("message", "Access Rejected for " + username);
+    public String rejectAccess(@RequestParam String username, @RequestParam String url, RedirectAttributes redirectAttributes) {
+        boolean rejected = accessService.rejectAccess(username, url);
+
+        if (rejected) {
+            redirectAttributes.addFlashAttribute("message", "Access rejected for " + username);
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Access rejection failed.");
+        }
+
         return "redirect:/admin";
     }
 
-    // ✅ USER VIEWS USERS IF ACCESS APPROVED
-    @GetMapping("/access/view-users")
-    public String viewApprovedUsers(@RequestParam String token, Model model, RedirectAttributes redirectAttributes) {
-        if (!jwtTokenUtil.validateToken(token)) {
-            redirectAttributes.addFlashAttribute("error", "Token expired or invalid.");
-            return "redirect:/user";
-        }
-
-        String username = jwtTokenUtil.getUsernameFromToken(token);
-        Optional<AccessRequest> accessRequest = accessRequestRepository.findByUsername(username);
-
-        if (accessRequest.isPresent() && accessRequest.get().isApproved()) {
-            List<User> users = userRepository.findAll();
-            model.addAttribute("users", users);
-            model.addAttribute("username", username);
-            return "users";
-        } else {
-            redirectAttributes.addFlashAttribute("error", "Access denied. Not approved.");
-            return "redirect:/user";
-        }
-    }
 
     // ✅ ADMIN SEES ALL PENDING REQUESTS
     @GetMapping("/pending")

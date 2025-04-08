@@ -73,11 +73,15 @@
         <p class="error message"><%= request.getAttribute("error") %></p>
     <% } %>
 
-    <h3>Request Access to View Users</h3>
-    <form action="/access/request" method="post">
-        <input type="hidden" name="username" value="<%= session.getAttribute("username") %>">
-        <button type="submit" class="btn request-btn">Request Access</button>
-    </form>
+    
+   
+       <h3>Request Access to View All Users</h3>
+<form action="/access/request" method="post">
+    <input type="hidden" name="username" value="<%= session.getAttribute("username") %>">
+    <input type="text" name="url" >
+    <button type="submit" class="btn request-btn">Request Access</button>
+</form>
+       
 
     <h3>Access Status</h3>
     <%
@@ -85,7 +89,7 @@
         if (isApproved != null && isApproved) {
     %>
         <p class="success">Your request is approved! You can now view the users.</p>
-        <form action="/access/view-users" method="get">
+        <form action="/admin/users" method="get">
             <input type="hidden" name="token" value="<%= request.getAttribute("token") != null ? request.getAttribute("token") : "" %>">
             <button type="submit" class="btn view-users">View Users</button>
         </form>
