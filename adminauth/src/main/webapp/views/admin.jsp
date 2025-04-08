@@ -118,18 +118,22 @@
             <div class="message error"><%= request.getAttribute("error") %></div>
         <% } %>
 <h3>Pending Access Requests</h3>
+<%@ page import="com.example.demo.Entity.AccessRequest" %>
+
 <table>
     <tr>
         <th>Username</th>
-        <th>Action</th>
+        <th>Requested URL</th>
+        <th>Actions</th>
     </tr>
     <%
         List<AccessRequest> accessRequests = (List<AccessRequest>) request.getAttribute("accessRequests");
-        if (accessRequests != null && !accessRequests.isEmpty()) {
+        if (accessRequests != null) {
             for (AccessRequest req : accessRequests) {
     %>
         <tr>
             <td><%= req.getUsername() %></td>
+            <td><%= req.getUrl() %></td>
             <td>
                 <form action="/admin/approveAccess/<%= req.getId() %>" method="post" style="display:inline;">
                     <button type="submit" class="btn approve">Approve</button>
@@ -137,6 +141,38 @@
 
                 <form action="/admin/rejectAccess" method="post" style="display:inline;">
                     <input type="hidden" name="username" value="<%= req.getUsername() %>">
+                    <input type="hidden" name="url" value="<%= req.getUrl() %>">
+                    <button type="submit" class="btn reject">Reject</button>
+                </form>
+            </td>
+        </tr>
+    <%
+            }
+        }
+    %>
+</table>
+
+<h3>Pending User Creation Requests</h3>
+<table>
+    <tr>
+        <th>Username</th>
+        <th>Action</th>
+    </tr>
+    <%
+        List<userCreationRequest> userRequests = (List<userCreationRequest>) request.getAttribute("userRequests");
+        if (userRequests != null && !userRequests.isEmpty()) {
+            for (userCreationRequest userReq : userRequests) {
+    %>
+        <tr>
+            <td><%= userReq.getUsername() %></td>
+            <td>
+                <form action="/admin/approveUser" method="post" style="display:inline;">
+                    <input type="hidden" name="username" value="<%= userReq.getUsername() %>">
+                    <button type="submit" class="btn approve">Approve</button>
+                </form>
+
+                <form action="/admin/rejectUser" method="post" style="display:inline;">
+                    <input type="hidden" name="username" value="<%= userReq.getUsername() %>">
                     <button type="submit" class="btn reject">Reject</button>
                 </form>
             </td>
@@ -146,12 +182,13 @@
         } else {
     %>
         <tr>
-            <td colspan="2">No pending access requests</td>
+            <td colspan="2">No pending user creation requests</td>
         </tr>
     <%
         }
     %>
 </table>
+
 
 
         <a href="/admin/users" class="link-btn">View All Users</a>
